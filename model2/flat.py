@@ -5,6 +5,7 @@ Made by Andreev Artem Ruslanovich group# M3114
 import matplotlib.pyplot as plt
 from math import sqrt, sin, cos, atan
 import pygame
+
 pygame.init()
 
 # Исходные данные (3 вариант)
@@ -22,56 +23,57 @@ r /= 100
 R /= 100
 L /= 100
 
-
 n = 100
 
 t = L / V_0
-U_min = round(((R - r) ** 2 * m)/(q * t ** 2), 3)
+U_min = round(((R - r) ** 2 * m) / (q * t ** 2), 3)
+
 
 def estimate(t, n, R, r, q, m, U=U_min):
-	dt = t / n
-	T = [dt * i for i in range(n + 1)]
-	a_y = [(q * U) / ((R - r) * m )] * (n + 1)
-	x = [T[i] * V_0 for i in range(n + 1)]
-	V_y = [a_y[i] * T[i] for i in range(n + 1)]
+    dt = t / n
+    T = [dt * i for i in range(n + 1)]
+    a_y = [(q * U) / ((R - r) * m)] * (n + 1)
+    x = [T[i] * V_0 for i in range(n + 1)]
+    V_y = [a_y[i] * T[i] for i in range(n + 1)]
 
-	y = []
-	for i in range(n + 1):
-		y.append((R - r) / 2 + (a_y[i] * T[i] ** 2) / 2)
-		if y[i] >= 0.03:
-			T = T[:i + 1]
-			a_y = a_y[:i + 1]
-			x = x[:i + 1]
-			V_y = V_y[:i + 1]
-			break
+    y = []
+    for i in range(n + 1):
+        y.append((R - r) / 2 + (a_y[i] * T[i] ** 2) / 2)
+        if y[i] >= 0.03:
+            T = T[:i + 1]
+            a_y = a_y[:i + 1]
+            x = x[:i + 1]
+            V_y = V_y[:i + 1]
+            break
 
-	V_end = sqrt(V_0 ** 2 + V_y[len(V_y) - 1] ** 2)
-	return T, a_y, x, V_y, y, V_end
+    V_end = sqrt(V_0 ** 2 + V_y[len(V_y) - 1] ** 2)
+    return T, a_y, x, V_y, y, V_end
+
 
 U = U_min
 
 T, a_y, x, V_y, y, V_end = estimate(t, n, R, r, q, m)
 
+
 def build_plots(x, y, T, V_y, a_y):
+    plots = [["График y(x)", x, y, "x, м", "y, м"],
+             ["График V_y(t)", T, V_y, "t, c", "V_y, м/с"],
+             ["График a_y(t)", T, a_y, "t, c", "a, м/с^2"],
+             ["График y(t)", T, y, "t, c", "y, м"]]
 
-	plots = [["График y(x)", x, y, "x, м", "y, м"], 
-	         ["График V_y(t)", T, V_y, "t, c", "V_y, м/с"], 
-	         ["График a_y(t)", T, a_y, "t, c", "a, м/с^2"], 
-	         ["График y(t)", T, y, "t, c", "y, м"]]
+    fig, ax = plt.subplots(2, 2, figsize=(15, 10))
+    axs = [ax[i, j] for i in range(2) for j in range(2)]
+    plt.subplots_adjust(hspace=0.3)
 
-	fig, ax = plt.subplots(2, 2, figsize=(15, 10))
-	axs = [ax[i, j] for i in range(2) for j in range(2)]
-	plt.subplots_adjust(hspace=0.3)
+    for i in range(4):
+        axs[i].grid(True)
+        axs[i].set_xlabel(plots[i][3])
+        axs[i].set_ylabel(plots[i][4])
+        axs[i].set_xlim([plots[i][1][0], plots[i][1][len(y) - 1]])
+        axs[i].set_title(plots[i][0])
+        axs[i].plot(plots[i][1], plots[i][2], color='red')
 
-	for i in range(4):
-	    axs[i].grid(True)
-	    axs[i].set_xlabel(plots[i][3])
-	    axs[i].set_ylabel(plots[i][4])
-	    axs[i].set_xlim([plots[i][1][0], plots[i][1][len(y) - 1]])
-	    axs[i].set_title(plots[i][0])
-	    axs[i].plot(plots[i][1], plots[i][2], color='red')
-
-	plt.show()
+    plt.show()
 
 
 win = pygame.display.set_mode([1500, 900])
@@ -85,7 +87,7 @@ pygame.draw.line(win, (255, 255, 255), (100, 400), (1400, 400), 3)
 
 font1 = pygame.font.SysFont('serif', 32)
 font2 = pygame.font.SysFont('serif', 28)
-text11 = font1.render(("Минимальная разность потенциалов, при которой электрон не успеет вылететь"), 1, (255, 255, 255)) 
+text11 = font1.render(("Минимальная разность потенциалов, при которой электрон не успеет вылететь"), 1, (255, 255, 255))
 text12 = font1.render(("из конденсатора = " + str(U_min) + " В"), 1, (255, 255, 255))
 text2 = font1.render(("Текущая разность потенциалов = " + str(U) + " В"), 1, (255, 255, 255))
 text3 = font1.render(("Время полёта = " + str(t) + " с"), 1, (255, 255, 255))
@@ -113,110 +115,115 @@ text = ""
 
 
 def flying(x, y, n):
-	flag = True
-	for i in range(8):
-		pygame.draw.circle(win, (0, 255, 0), (-4 + i * 13, 250), 7)
-		pygame.display.update()
-		clock.tick(fps)
-		pygame.draw.circle(win, (0, 0, 0), (-4 + i * 13, 250), 7)
+    flag = True
+    for i in range(8):
+        pygame.draw.circle(win, (0, 255, 0), (-4 + i * 13, 250), 7)
+        pygame.display.update()
+        clock.tick(fps)
+        pygame.draw.circle(win, (0, 0, 0), (-4 + i * 13, 250), 7)
 
-	for i in range(len(y)):
-		
-		if ((100 + int(x[i] * 10000) <= 1400) and (400 - int(y[i] * 10000) <= 100) and U >= U_min):
-			for j in range(7, 12):
-				flag = False
-				pygame.draw.circle(win, (255, 0, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), j)
-				pygame.display.update()
-				clock.tick(fps // 4)
-			pygame.draw.circle(win, (0, 0, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), 11)
-		else:
-			pygame.draw.circle(win, (0, 255, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), 7)
-			pygame.display.update()
-			clock.tick(fps)
-			pygame.draw.circle(win, (0, 0, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), 7)
+    for i in range(len(y)):
 
-		pygame.draw.line(win, (255, 255, 255), (100, 100), (1400, 100), 3)
-		pygame.draw.line(win, (255, 255, 255), (100, 400), (1400, 400), 3)
+        if ((100 + int(x[i] * 10000) <= 1400) and (400 - int(y[i] * 10000) <= 100) and U >= U_min):
+            for j in range(7, 12):
+                flag = False
+                pygame.draw.circle(win, (255, 0, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), j)
+                pygame.display.update()
+                clock.tick(fps // 4)
+            pygame.draw.circle(win, (0, 0, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), 11)
+        else:
+            pygame.draw.circle(win, (0, 255, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), 7)
+            pygame.display.update()
+            clock.tick(fps)
+            pygame.draw.circle(win, (0, 0, 0), (100 + int(x[i] * 10000), 400 - int(y[i] * 10000)), 7)
 
-	if flag:
-		for i in range(10):
-			pygame.draw.line(win, (255, 255, 255), (100, 100), (1400, 100), 3)
-			pygame.draw.line(win, (255, 255, 255), (100, 400), (1400, 400), 3)
-			pygame.draw.circle(win, (0, 255, 0), (int((100 + (x[n] * 10000) + cos(atan(V_y[n]/V_0))*(i + 1) * 13)), int((400 - (y[n] * 10000)
-							   - sin(atan(V_y[n]/V_0))*(i + 1) * 13))), 7)
-			pygame.display.update()
-			clock.tick(fps)
-			pygame.draw.circle(win, (0, 0, 0), (int((100 + (x[n] * 10000) + cos(atan(V_y[n]/V_0))*(i + 1) * 13)), int((400 - int(y[n] * 10000)
-							   - sin(atan(V_y[n]/V_0))*(i + 1) * 13))), 8)
+        pygame.draw.line(win, (255, 255, 255), (100, 100), (1400, 100), 3)
+        pygame.draw.line(win, (255, 255, 255), (100, 400), (1400, 400), 3)
+
+    if flag:
+        for i in range(10):
+            pygame.draw.line(win, (255, 255, 255), (100, 100), (1400, 100), 3)
+            pygame.draw.line(win, (255, 255, 255), (100, 400), (1400, 400), 3)
+            pygame.draw.circle(win, (0, 255, 0), (
+            int((100 + (x[n] * 10000) + cos(atan(V_y[n] / V_0)) * (i + 1) * 13)), int((400 - (y[n] * 10000)
+                                                                                       - sin(atan(V_y[n] / V_0)) * (
+                                                                                                   i + 1) * 13))), 7)
+            pygame.display.update()
+            clock.tick(fps)
+            pygame.draw.circle(win, (0, 0, 0), (
+            int((100 + (x[n] * 10000) + cos(atan(V_y[n] / V_0)) * (i + 1) * 13)), int((400 - int(y[n] * 10000)
+                                                                                       - sin(atan(V_y[n] / V_0)) * (
+                                                                                                   i + 1) * 13))), 8)
 
 
 while True:
 
-	input_box = pygame.Rect(100, 770, 400, 50)
-	pygame.draw.rect(win, (255, 255, 255), button1)
-	pygame.draw.rect(win, (255, 255, 255), button2)
+    input_box = pygame.Rect(100, 770, 400, 50)
+    pygame.draw.rect(win, (255, 255, 255), button1)
+    pygame.draw.rect(win, (255, 255, 255), button2)
 
-	win.blit(text5, (1132, 622))
-	win.blit(text6, (1132, 742))
+    win.blit(text5, (1132, 622))
+    win.blit(text6, (1132, 742))
 
-	clock.tick(fps)
-	pygame.display.update()
+    clock.tick(fps)
+    pygame.display.update()
 
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			pygame.quit()
-			quit()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
 
-		if event.type == pygame.MOUSEBUTTONDOWN:
-				if button1.collidepoint(event.pos):
-					pygame.draw.rect(win, (170, 170, 170), button1)
-					win.blit(text5, (1132, 622))
-					pygame.draw.rect(win, (170, 170, 170), button2)
-					win.blit(text6, (1132, 742))
-					flying(x, y, n)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if button1.collidepoint(event.pos):
+                pygame.draw.rect(win, (170, 170, 170), button1)
+                win.blit(text5, (1132, 622))
+                pygame.draw.rect(win, (170, 170, 170), button2)
+                win.blit(text6, (1132, 742))
+                flying(x, y, n)
 
-				if button2.collidepoint(event.pos):
-					pygame.draw.rect(win, (170, 170, 170), button2)
-					win.blit(text6, (1132, 742))
-					pygame.draw.rect(win, (170, 170, 170), button1)
-					win.blit(text5, (1132, 622))
-					clock.tick(fps)
-					pygame.display.update()
+            if button2.collidepoint(event.pos):
+                pygame.draw.rect(win, (170, 170, 170), button2)
+                win.blit(text6, (1132, 742))
+                pygame.draw.rect(win, (170, 170, 170), button1)
+                win.blit(text5, (1132, 622))
+                clock.tick(fps)
+                pygame.display.update()
 
-					clock.tick(fps)
-					pygame.display.update()
-					build_plots(x, y, T, V_y, a_y)
+                clock.tick(fps)
+                pygame.display.update()
+                build_plots(x, y, T, V_y, a_y)
 
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_RETURN:
-				pygame.draw.rect(win, (255, 255, 255), input_box)
-				try:
-					text = float(text)
-					if (text >= 0 and text <= 1000):
-						U = round(text, 3)
-						T, a_y, x, V_y, y, V_end = estimate(t, n, R, r, q, m, U)
-						text2 = font1.render(("Текущая разность потенциалов = " + str(U) + " В"), 1, (255, 255, 255))
-						text3 = font1.render(("Время полёта = " + str(T[len(T) - 1]) + " с"), 1, (255, 255, 255))
-						text4 = font1.render(("Конечная скорость = " + str(round(V_end, 3)) + " м/с"), 1, (255, 255, 255))
-						pygame.draw.rect(win, (0, 0, 0), (100, 550, 600, 40))
-						pygame.draw.rect(win, (0, 0, 0), (100, 610, 600, 40))
-						pygame.draw.rect(win, (0, 0, 0), (100, 670, 600, 40))
-						win.blit(text2, (100, 550))
-						win.blit(text3, (100, 610))
-						win.blit(text4, (100, 670))
-						clock.tick(fps)
-						pygame.display.update()
-					text = ""
-				except:
-					text = ""
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                pygame.draw.rect(win, (255, 255, 255), input_box)
+                try:
+                    text = float(text)
+                    if (text >= 0 and text <= 1000):
+                        U = round(text, 3)
+                        T, a_y, x, V_y, y, V_end = estimate(t, n, R, r, q, m, U)
+                        text2 = font1.render(("Текущая разность потенциалов = " + str(U) + " В"), 1, (255, 255, 255))
+                        text3 = font1.render(("Время полёта = " + str(T[len(T) - 1]) + " с"), 1, (255, 255, 255))
+                        text4 = font1.render(("Конечная скорость = " + str(round(V_end, 3)) + " м/с"), 1,
+                                             (255, 255, 255))
+                        pygame.draw.rect(win, (0, 0, 0), (100, 550, 600, 40))
+                        pygame.draw.rect(win, (0, 0, 0), (100, 610, 600, 40))
+                        pygame.draw.rect(win, (0, 0, 0), (100, 670, 600, 40))
+                        win.blit(text2, (100, 550))
+                        win.blit(text3, (100, 610))
+                        win.blit(text4, (100, 670))
+                        clock.tick(fps)
+                        pygame.display.update()
+                    text = ""
+                except:
+                    text = ""
 
-			elif event.key == pygame.K_BACKSPACE:
-				pygame.draw.rect(win, (255, 255, 255), input_box)
-				text = text[:-1]
-			else:
-				text += event.unicode
+            elif event.key == pygame.K_BACKSPACE:
+                pygame.draw.rect(win, (255, 255, 255), input_box)
+                text = text[:-1]
+            else:
+                text += event.unicode
 
-			txt_surface = font2.render(text, True, (0, 0, 0))
-			win.blit(txt_surface, (input_box.x+5, input_box.y+8))
+            txt_surface = font2.render(text, True, (0, 0, 0))
+            win.blit(txt_surface, (input_box.x + 5, input_box.y + 8))
 
-		pygame.event.clear()
+        pygame.event.clear()
